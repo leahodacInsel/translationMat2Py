@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 
 '''print code message of the software'''
 
-'''Turn the cruves'''
+'''Turn the curves'''
+
 
 def get_raw_vectors(path, nameFile):
     xmlFile = path + "\\" + nameFile
@@ -95,18 +96,78 @@ def plot_raw_curves(vol_VT, time_VT, flow_FV, vol_FV, nameFile):
     plt.show()
 
 
-def get_parameters(path, nameFile):
+def get_parameters(xmlFile):
     print("THIS FUNCTION IS IN BUILD...")
-    xmlFile = path + "\\" + nameFile
+    data = dict()
 
     tree = ET.parse(xmlFile)
     root = tree.getroot()
-    trials = root.findall("VisitTrees/VisitTree/Levels/LevelTree/Measurements/Measurement/Trials/Trial")
+
+    patient = root.findall("Patient")[0]
+    data['ID'] = patient.find("ExternalId").text
+    data['LastName'] = patient.find("LastName").text
+    data['FirstName'] = patient.find("FirstName").text
+    data['BirthDate'] = patient.find("Birthdate").text[0:10]
+
+    visit = root.findall("VisitTrees/VisitTree/Visit")[0]
+    data['Sexe'] = visit.find("Gender").text
+    data['Weight'] = visit.find("Weight").text
+    data['Height'] = visit.find("Height").text
+    data['TestDate'] = visit.get("LocalDate")[0:10]
+    data['TestTime'] = visit.get("LocalDate")[11:19] # CHECK TIME
+
+    levelTrees = root.findall('VisitTrees/VisitTree/Levels/LevelTree/Level[@Type="Pre"]...')
+    for levelTree in levelTrees: measurements = levelTree.findall("./Measurements/Measurement[@MeasurementType='Spirometry']")
+    for measurement in measurements: trials = measurement.findall("./Trials/Trial")
     for trial in trials:
         number = int(trial.get('Number'))
         params = trial.findall("./Parameters/Parameter")
         print("In trial", number, ", params: \n")
 
+        keys = []
+        vals = []
         for param in params:
-            print("     -", param.get('ShortName'))
-            print(param.findall('\Value'))
+            keys.append(param.get('ShortName'))
+            vals.append(param.find('Value').text)
+
+        data_param = dict(zip(keys, vals))
+
+        data.update(data_param)
+
+        return data
+
+
+
+
+'''
+    NbCurves
+    Inhalation
+    CurvesOrder
+    QualitySpiro
+    IdxTrial
+    FEV1
+    FEV75
+    FEV5
+    FVC
+    FVC_IN
+    VC_IN
+    VC_MAX
+    FEV1_per_FVC
+    FEV1_per_VCmax
+    FETPEF
+    FEF25
+    FEF50
+    FEF75
+    MFEF
+    MEF25
+    MEF50
+    MEF75
+    PEF
+    PIF
+    VBEex
+    VBE_per_FVC
+    Tdel
+    dFEV1
+    dFEV1_per_dFVC
+    dFVC_per_FET
+'''

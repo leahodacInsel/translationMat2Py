@@ -16,24 +16,17 @@ def get_files(mode):
         # Patients graph data(vol, flow)
         root = tk.Tk()
         root.withdraw()
-        curve_file_names = filedialog.askopenfilenames(filetypes=[("text files", '*.xml')], title='Select XML curves data')
+        file_names = filedialog.askopenfilenames(filetypes=[("text files", '*.xml')], title='Select XML curves data')
 
-        # Patients graph data(vol, flow)
-        root = tk.Tk()
-        root.withdraw()
-        vars_file_names = filedialog.askopenfilenames(filetypes=[("tables", '*.x*')], title='Select the patient data')
-        return curve_file_names[0], vars_file_names[0]
 
     elif 'test' in mode:
-        vars_file_names = r'L:\KKM_LuFu\OfficeData\Biomedical Engineers\Lea\03.Projects\project QC\code_marion\Patients_values.xlsx'
-        curve_file_names = r'L:\KKM_LuFu\OfficeData\01. Documentation\SpiroQC\0012523879_ test julia.xml'
-        return curve_file_names, vars_file_names
+        file_names = r'L:\KKM_LuFu\OfficeData\01. Documentation\SpiroQC\0016504909_testLea.xml'
+        return file_names
 
-    if not curve_file_names or not vars_file_names:
+    if not file_names:
         print('Error, no files selected, please retry')
 
 def init_res_table():
-
 
     # This function build the results table which will be saved as an excel later.
     dtypes = np.dtype(
@@ -97,19 +90,19 @@ if __name__ == '__main__':
     should contain the 'best trial' as their first trial. 
     However in the results this 'best trial' will not appear'''
 
-    curveFileNames, varsFileNames = get_files('test')
-    print('Curve: ', curveFileNames, '\nVars: ', varsFileNames)
+    FileNames = get_files('test')
+    print('Curve: ', FileNames)
 
-    fileNumber = len(curveFileNames)
-
-    numerical_data = pd.read_excel(Path(varsFileNames))
-    print(numerical_data)
+    fileNumber = len(FileNames)
 
     # init results table
     results = init_res_table()
     print(results)
 
-    # for file in curveFileNames:
+    #for file[0][] in FileNames:
+    data = get_parameters(FileNames)
+    print(data)
+
 
         # init plot --> XML files
 
