@@ -5,6 +5,8 @@ from pathlib import Path
 import tables as tb
 import numpy as np
 from read_from_xml import get_raw_vectors, plot_raw_curves, get_parameters
+from numerical_algo import flowchart
+from initializations import separate_inspi_expi
 
 
 def get_files(mode):
@@ -17,14 +19,16 @@ def get_files(mode):
         root = tk.Tk()
         root.withdraw()
         file_names = filedialog.askopenfilenames(filetypes=[("text files", '*.xml')], title='Select XML curves data')
-
+        '''TROUVER COMMENT SEPARER NOM FICHIER ET CHEMIN !!!'''
 
     elif 'test' in mode:
-        file_names = r'L:\KKM_LuFu\OfficeData\01. Documentation\SpiroQC\0016504909_testLea.xml'
-        return file_names
+        path = r'L:\KKM_LuFu\OfficeData\01. Documentation\SpiroQC\04. SentrySuite export'
+        nameFile = '0016504909_test200223'
+        return path, nameFile
 
-    if not file_names:
+    if not nameFile:
         print('Error, no files selected, please retry')
+
 
 def init_res_table():
 
@@ -84,33 +88,44 @@ def init_res_table():
 
     return df
 
+
 if __name__ == '__main__':
     # Select files and init params
     '''For this algorithm to work the excel files should be in english and all 
     should contain the 'best trial' as their first trial. 
     However in the results this 'best trial' will not appear'''
 
-    FileNames = get_files('test')
-    print('Curve: ', FileNames)
+    path, nameFile = get_files('test')
 
-    fileNumber = len(FileNames)
+    fileNumber = len(nameFile)
 
     # init results table
     results = init_res_table()
-    print(results)
+    #print(results)
 
-    #for file[0][] in FileNames:
-    data = get_parameters(FileNames)
-    print(data)
+    # for file[0][] in FileNames:
+    data = get_parameters(path, nameFile)
+    vol_VT, time_VT, flow_FV, vol_FV = get_raw_vectors(path, nameFile)
+
+    # curves are not separated by trials, vol_VT is composed of the curves of each trial
+    data['vol_VT'] = vol_VT
+    data['time_VT'] = time_VT
+    data['flow_FV'] = flow_FV
+    data['vol_FV'] = vol_FV
+
+    plot_raw_curves(vol_VT, time_VT, flow_FV, vol_FV, 'testFile')
 
 
-        # init plot --> XML files
+    data = computedFEV75(data)
+    data = computedPEF(data)
 
+    trialNum = len(vol_VT)
+    for n in range(trialNum):
+        trialName = "trial" + str(n)
+        criteria = flowchart(data[trialName])
+        # inspis, expis = separate_inspi_expi(data)
 
-        # numerical algo
-
-
-
+    print('\n\n...jusqu\'ici tout va bien')
 
 
 

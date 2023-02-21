@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 
 '''Turn the curves'''
 
+'''Idealement enlever les espaces autour des keys du dictionaire data'''
+
 
 def get_raw_vectors(path, nameFile):
     xmlFile = path + "\\" + nameFile
@@ -38,8 +40,8 @@ def get_raw_vectors(path, nameFile):
         curves = trial.findall("./RawCurveData/Curves/Curve")
 
         # if there is no raw data available for the trial
-        if len(curves) == 0:
-            print("Trial number ", number, " doesn't contain raw curve data")
+        #if len(curves) == 0:
+            #print("Trial number ", number, " doesn't contain raw curve data")
 
         for curve in curves:
             curveType = curve.get('DataType')
@@ -74,12 +76,10 @@ def get_raw_vectors(path, nameFile):
         flow_FV.append(yFV)
 
     # mini check data
-    if vol_FV == vol_VT:
-        print("Volume vectors from the V-T curve and from the F-V are identical")
-    else:
+    if vol_FV != vol_VT:
         print("WARNING: Volume vectors from the V-T curve and from the F-V are different")
 
-    return vol_VT, time_VT, flow_FV, vol_FV, nameFile
+    return vol_VT, time_VT, flow_FV, vol_FV
 
 
 def plot_raw_curves(vol_VT, time_VT, flow_FV, vol_FV, nameFile):
@@ -87,6 +87,7 @@ def plot_raw_curves(vol_VT, time_VT, flow_FV, vol_FV, nameFile):
     fig, axs = plt.subplots(2, len(time_VT))
 
     for resp in range(len(time_VT)):
+
         axs[0, resp].plot(time_VT[resp], vol_VT[resp], "k")
         axs[0, resp].set_title(f'V-T (#{resp})')
         axs[1, resp].plot(vol_FV[resp], flow_FV[resp], "r")
@@ -96,8 +97,9 @@ def plot_raw_curves(vol_VT, time_VT, flow_FV, vol_FV, nameFile):
     plt.show()
 
 
-def get_parameters(xmlFile):
-    print("THIS FUNCTION IS IN BUILD...")
+def get_parameters(path, nameFile):
+    xmlFile = path + "\\" + nameFile
+
     data = dict()
 
     tree = ET.parse(xmlFile)
@@ -120,54 +122,21 @@ def get_parameters(xmlFile):
     for levelTree in levelTrees: measurements = levelTree.findall("./Measurements/Measurement[@MeasurementType='Spirometry']")
     for measurement in measurements: trials = measurement.findall("./Trials/Trial")
     for trial in trials:
+        params_per_trial = dict()
         number = int(trial.get('Number'))
         params = trial.findall("./Parameters/Parameter")
-        print("In trial", number, ", params: \n")
 
         keys = []
         vals = []
         for param in params:
             keys.append(param.get('ShortName'))
-            vals.append(param.find('Value').text)
+            vals.append(float(param.find('Value').text))
 
         data_param = dict(zip(keys, vals))
 
-        data.update(data_param)
+        params_per_trial.update(data_param)
+        key_trial = "trial"+str(number)
+        data[key_trial] = params_per_trial
+        # each trial is an entry in the data dictionary, each param is en entry in the trial dictionary
 
-        return data
-
-
-
-
-'''
-    NbCurves
-    Inhalation
-    CurvesOrder
-    QualitySpiro
-    IdxTrial
-    FEV1
-    FEV75
-    FEV5
-    FVC
-    FVC_IN
-    VC_IN
-    VC_MAX
-    FEV1_per_FVC
-    FEV1_per_VCmax
-    FETPEF
-    FEF25
-    FEF50
-    FEF75
-    MFEF
-    MEF25
-    MEF50
-    MEF75
-    PEF
-    PIF
-    VBEex
-    VBE_per_FVC
-    Tdel
-    dFEV1
-    dFEV1_per_dFVC
-    dFVC_per_FET
-'''
+    return data
