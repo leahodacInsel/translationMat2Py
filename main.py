@@ -1,5 +1,5 @@
 from read_from_xml import get_raw_vectors, plot_raw_curves, get_parameters
-from numerical_algo import flowchart, compute_tex, compute_dFEV75, compute_dPEF
+from numerical_algo import flowchart
 from initializations import get_files, init_res_table
 
 
@@ -19,9 +19,6 @@ if __name__ == '__main__':
         data[nameFile] = get_parameters(data[nameFile], paths[idx], nameFile)
         data[nameFile] = get_raw_vectors(data[nameFile], paths[idx], nameFile)
         plot_raw_curves(data[nameFile], nameFile)
-        data[nameFile] = compute_dFEV75(data[nameFile])
-        data[nameFile] = compute_dPEF(data[nameFile])
-        data[nameFile] = compute_tex(data[nameFile])
 
         criteria = flowchart(data[nameFile])
 
