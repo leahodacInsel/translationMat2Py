@@ -20,50 +20,49 @@ def flowchart(data):
         if key not in data.keys():
             print(key, ' is not in dataTrial')
 
-    criterias = dict()
-
     # Start of test
+    criteria = pd.DataFrame()
 
     for nTrial in range(len(data['FETPEF'])):
 
-        criteria = dict()
+
         age = ((datetime.strptime(data['TestDate'], '%Y-%m-%d')) - (
             datetime.strptime(data['BirthDate'], '%Y-%m-%d')))
-        criteria['age'] = age.days / 365.25
+        criteria.at[nTrial, 'age'] = age.days / 365.25
 
         # BEV < 5% FVC or < 0.1L
         if data['VBE%FVC'][nTrial] < 5:
-            criteria['start_VBE_FVC_crit'] = 1
+            criteria.at[nTrial, 'start_VBE_FVC_crit'] = 1
 
         elif data['VBEex '][nTrial] < 0.1: # check that VBEex is BEV
-            criteria['start_VBE_0_1_crit'] = 1
-            criteria['start_VBE_FVC_crit'] = 0
+            criteria.at[nTrial, 'start_VBE_0_1_crit'] = 1
+            criteria.at[nTrial, 'start_VBE_FVC_crit'] = 0
         else:
-            criteria['start_VBE_0_1_crit'] = 0
-            criteria['start_VBE_FVC_crit'] = 0
-            criteria['start_of_test_crit'] = 0
-            criteria['accept'] = 0
+            criteria.at[nTrial, 'start_VBE_0_1_crit'] = 0
+            criteria.at[nTrial, 'start_VBE_FVC_crit'] = 0
+            criteria.at[nTrial, 'start_of_test_crit'] = 0
+            criteria.at[nTrial, 'accept'] = 0
 
         # FETPEF
         if float(data['FETPEF'][nTrial]) <= 150:
-            criteria['start_FETPEF_crit'] = 1
+            criteria.at[nTrial, 'start_FETPEF_crit'] = 1
         else:
-            criteria['start_FETPEF_crit'] = 0
-            criteria['start_of_test_crit'] = 0
-            criteria['accept'] = 0
+            criteria.at[nTrial, 'start_FETPEF_crit'] = 0
+            criteria.at[nTrial, 'start_of_test_crit'] = 0
+            criteria.at[nTrial, 'accept'] = 0
 
         # Delta PEF
 
         if data['dPEF%_man'] <= 10:
-            criteria['start_dPEF_10_crit'] = 1
+            criteria.at[nTrial, 'start_dPEF_10_crit'] = 1
         elif data['dPEF%_man'] >= -10:
-            criteria['start_dPEF_minus_10_crit'] = 1
-            criteria['start_dPEF_10_crit'] = 0
+            criteria.at[nTrial, 'start_dPEF_minus_10_crit'] = 1
+            criteria.at[nTrial, 'start_dPEF_10_crit'] = 0
         else:
-            criteria['start_dPEF_minus_10_crit'] = 0
-            criteria['start_dPEF_10_crit'] = 0
-            criteria['start_of_test_crit'] = 0
-            criteria['accept'] = 0
+            criteria.at[nTrial, 'start_dPEF_minus_10_crit'] = 0
+            criteria.at[nTrial, 'start_dPEF_10_crit'] = 0
+            criteria.at[nTrial, 'start_of_test_crit'] = 0
+            criteria.at[nTrial, 'accept'] = 0
 
 
 # this part doesn't appear in the mindmap
@@ -71,19 +70,19 @@ def flowchart(data):
         # Hesitation time
         if 'Tdel' in data:
             if data['Tdel'][nTrial] <= 2:
-                criteria['start_Tdel_crit'] = 1
+                criteria.at[nTrial, 'start_Tdel_crit'] = 1
                 if 'start_of_test_crit' not in criteria:
-                    criteria['start_of_test_crit'] = 1
+                    criteria.at[nTrial, 'start_of_test_crit'] = 1
             else:
-                criteria['start_Tdel_crit'] = 0
-                criteria['start_of_test_crit'] = 0
-                criteria['accept'] = 0
+                criteria.at[nTrial, 'start_Tdel_crit'] = 0
+                criteria.at[nTrial, 'start_of_test_crit'] = 0
+                criteria.at[nTrial, 'accept'] = 0
 
         else:
-            if criteria['start_dPEF_10_crit'] or criteria['start_dPEF_minus_10_crit']:
-                criteria['start_of_test_crit'] = 1
+            if criteria.at[nTrial, 'start_dPEF_10_crit'] or criteria.at[nTrial, 'start_dPEF_minus_10_crit']:
+                criteria.at[nTrial, 'start_of_test_crit'] = 1
             else:
-                criteria['start_of_test_crit'] = 0
+                criteria.at[nTrial, 'start_of_test_crit'] = 0
 
 
 
@@ -91,163 +90,158 @@ def flowchart(data):
 
         # FIVC - FVC <= 0.1 or <= 5% of FVC
         if data['FVC IN'][nTrial] - data['FVC   '][nTrial] <= 0.1: # check that FVC IN is FIVC
-            criteria['max_insp_FVCIN_FVC_0_1_crit'] = 1
-            criteria['max_insp_crit'] = 1
+            criteria.at[nTrial, 'max_insp_FVCIN_FVC_0_1_crit'] = 1
+            criteria.at[nTrial, 'max_insp_crit'] = 1
         elif data['FVC IN'][nTrial] - data['FVC   '][nTrial] <= 0.05 * data['FVC   '][nTrial]:
-            criteria['max_insp_FVCIN_FVC_0_1_crit'] = 0
-            criteria['max_insp_FVCIN_FVC_0_0_5_FVC_crit'] = 1
-            criteria['max_insp_crit'] = 1
+            criteria.at[nTrial, 'max_insp_FVCIN_FVC_0_1_crit'] = 0
+            criteria.at[nTrial, 'max_insp_FVCIN_FVC_0_0_5_FVC_crit'] = 1
+            criteria.at[nTrial, 'max_insp_crit'] = 1
         else:
-            criteria['max_insp_FVCIN_FVC_0_1_crit'] = 0
-            criteria['max_insp_FVCIN_FVC_0_0_5_FVC_crit'] = 0
-            criteria['max_insp_crit'] = 0
-            criteria['accept'] = 0
+            criteria.at[nTrial, 'max_insp_FVCIN_FVC_0_1_crit'] = 0
+            criteria.at[nTrial, 'max_insp_FVCIN_FVC_0_0_5_FVC_crit'] = 0
+            criteria.at[nTrial, 'max_insp_crit'] = 0
+            criteria.at[nTrial, 'accept'] = 0
 
         # Now split by age because it has some differences in criteria
-        if float(criteria['age']) <= 6:
-            criteria['age_crit'] = 1
+        if float(criteria.at[nTrial, 'age']) <= 6:
+            criteria.at[nTrial, 'age_crit'] = 1
 
             # End of forced expiration
             # volume_change < 0.025 & & volume_change_time >= 1 --> EOTV
 
             if data['EOTV'][nTrial] < 0.025: # check if EOTV is vol.change in 1s
-                criteria['end_EOTV_crit'] = 1
-                criteria['EOFE_crit'] = 1
+                criteria.at[nTrial, 'end_EOTV_crit'] = 1
+                criteria.at[nTrial, 'EOFE_crit'] = 1
 
             elif data[ 'FET   '][nTrial] >= 15:
-                criteria['end_EOTV_crit'] = 0
-                criteria['end_FET_crit'] = 1
-                criteria['EOFE_crit'] = 1
+                criteria.at[nTrial, 'end_EOTV_crit'] = 0
+                criteria.at[nTrial, 'end_FET_crit'] = 1
+                criteria.at[nTrial, 'EOFE_crit'] = 1
 
             elif data['dFVC%_man'] <= 10:
-                criteria['end_EOTV_crit'] = 0
-                criteria['end_FET_crit'] = 0
-                criteria['end_dFVC_delta_crit'] = 1
-                criteria['EOFE_crit'] = 1
+                criteria.at[nTrial, 'end_EOTV_crit'] = 0
+                criteria.at[nTrial, 'end_FET_crit'] = 0
+                criteria.at[nTrial, 'end_dFVC_delta_crit'] = 1
+                criteria.at[nTrial, 'EOFE_crit'] = 1
 
             elif data['dFVC%_man'] <= 0.1:
-                criteria['end_EOTV_crit'] = 0
-                criteria['end_FET_crit'] = 0
-                criteria['end_dFVC_delta_crit'] = 0
-                criteria['end_dFVC_crit'] = 1
-                criteria['EOFE_crit'] = 1
+                criteria.at[nTrial, 'end_EOTV_crit'] = 0
+                criteria.at[nTrial, 'end_FET_crit'] = 0
+                criteria.at[nTrial, 'end_dFVC_delta_crit'] = 0
+                criteria.at[nTrial, 'end_dFVC_crit'] = 1
+                criteria.at[nTrial, 'EOFE_crit'] = 1
 
             else:
-                criteria['end_EOTV_crit'] = 0
-                criteria['end_FET_crit'] = 0
-                criteria['end_dFVC_delta_crit'] = 0
-                criteria['end_dFVC_crit'] = 0
-                criteria['EOFE_crit'] = 0
-                criteria['accept'] = 0
+                criteria.at[nTrial, 'end_EOTV_crit'] = 0
+                criteria.at[nTrial, 'end_FET_crit'] = 0
+                criteria.at[nTrial, 'end_dFVC_delta_crit'] = 0
+                criteria.at[nTrial, 'end_dFVC_crit'] = 0
+                criteria.at[nTrial, 'EOFE_crit'] = 0
+                criteria.at[nTrial, 'accept'] = 0
 
             # Manoever accepted
-            if criteria['start_of_test_crit'] and criteria['max_insp_crit'] and criteria['EOFE_crit']:
-                criteria['accept'] = 1
+            if criteria.at[nTrial, 'start_of_test_crit'] and criteria.at[nTrial, 'max_insp_crit'] and criteria.at[nTrial, 'EOFE_crit']:
+                criteria.at[nTrial, 'accept'] = 1
             else:
-                criteria['accept'] = 0
+                criteria.at[nTrial, 'accept'] = 0
 
 
             # Repeatability
             if data['tex'][nTrial] >= 1:
-                criteria['repeat_Tex_crit'] = 1
+                criteria.at[nTrial, 'repeat_Tex_crit'] = 1
                 if data['dFEV1_man'] <= 0.1:
-                    criteria['repeat_dFEV1_crit'] = 1
-                    criteria['repeat_crit'] = 1
+                    criteria.at[nTrial, 'repeat_dFEV1_crit'] = 1
+                    criteria.at[nTrial, 'repeat_crit'] = 1
                 elif data['dFEV1%_man'] <= 10:
-                    criteria['repeat_dFEV1_delta_crit'] = 1
-                    criteria['repeat_crit'] = 1
-                    criteria['repeat_dFEV1_crit'] = 0
+                    criteria.at[nTrial, 'repeat_dFEV1_delta_crit'] = 1
+                    criteria.at[nTrial, 'repeat_crit'] = 1
+                    criteria.at[nTrial, 'repeat_dFEV1_crit'] = 0
                 else:
-                    criteria['repeat_dFEV1_delta_crit'] = 0
-                    criteria['repeat_crit'] = 0
-                    criteria['repeat_dFEV1_crit'] = 0
+                    criteria.at[nTrial, 'repeat_dFEV1_delta_crit'] = 0
+                    criteria.at[nTrial, 'repeat_crit'] = 0
+                    criteria.at[nTrial, 'repeat_dFEV1_crit'] = 0
 
             elif data['dFEV75_man'] <= 0.1:
-                criteria['repeat_dFEV75_crit'] = 1
-                criteria['repeat_crit'] = 1
-                criteria['repeat_Tex_crit'] = 0
+                criteria.at[nTrial, 'repeat_dFEV75_crit'] = 1
+                criteria.at[nTrial, 'repeat_crit'] = 1
+                criteria.at[nTrial, 'repeat_Tex_crit'] = 0
 
             elif data['dFEV75%_man'] <= 10:
-                criteria['repeat_dFEV75_delta_crit'] = 1
-                criteria['repeat_crit'] = 1
-                criteria['repeat_dFEV75_crit'] = 0
-                criteria['repeat_Tex_crit'] = 0
+                criteria.at[nTrial, 'repeat_dFEV75_delta_crit'] = 1
+                criteria.at[nTrial, 'repeat_crit'] = 1
+                criteria.at[nTrial, 'repeat_dFEV75_crit'] = 0
+                criteria.at[nTrial, 'repeat_Tex_crit'] = 0
 
             else:
-                criteria['repeat_dFEV75_delta_crit'] = 0
-                criteria['repeat_dFEV75_crit'] = 0
-                criteria['repeat_Tex_crit'] = 0
-                criteria['repeat_crit'] = 0
+                criteria.at[nTrial, 'repeat_dFEV75_delta_crit'] = 0
+                criteria.at[nTrial, 'repeat_dFEV75_crit'] = 0
+                criteria.at[nTrial, 'repeat_Tex_crit'] = 0
+                criteria.at[nTrial, 'repeat_crit'] = 0
 
 
             if data['dFVC_man'] <= 0.1:
-                criteria['repeat_dFVC_crit'] = 1
+                criteria.at[nTrial, 'repeat_dFVC_crit'] = 1
                 if 'repeat_crit' not in criteria: # means that it went in at least one YES above
-                    criteria['repeat_crit'] = 1
+                    criteria.at[nTrial, 'repeat_crit'] = 1
 
             elif data['dFVC%_man'] <= 10:
-                criteria['repeat_dFVC_delta_crit'] = 1
-                criteria['repeat_dFVC_crit'] = 0
+                criteria.at[nTrial, 'repeat_dFVC_delta_crit'] = 1
+                criteria.at[nTrial, 'repeat_dFVC_crit'] = 0
             if 'repeat_crit' not in criteria:
-                criteria['repeat_crit'] = 1
+                criteria.at[nTrial, 'repeat_crit'] = 1
             else:
-                criteria['repeat_dFVC_delta_crit'] = 0
-                criteria['repeat_crit'] = 0
-                criteria['repeat_dFVC_crit'] = 0
+                criteria.at[nTrial, 'repeat_dFVC_delta_crit'] = 0
+                criteria.at[nTrial, 'repeat_crit'] = 0
+                criteria.at[nTrial, 'repeat_dFVC_crit'] = 0
 
         else:
             # End of forced expiration
 
             if data['EOTV'][nTrial] < 0.025:
-                criteria['end_EOTV_crit'] = 1
-                criteria['EOFE_crit'] = 1
+                criteria.at[nTrial, 'end_EOTV_crit'] = 1
+                criteria.at[nTrial, 'EOFE_crit'] = 1
 
             elif data['FET   '][nTrial] >= 15:
-                criteria['end_FET_crit'] = 1
-                criteria['EOFE_crit'] = 1
-                criteria['end_EOTV_crit'] = 0
+                criteria.at[nTrial, 'end_FET_crit'] = 1
+                criteria.at[nTrial, 'EOFE_crit'] = 1
+                criteria.at[nTrial, 'end_EOTV_crit'] = 0
 
             elif data['dFVC_man'] <= 0.15:
-                criteria['end_dFVC_crit'] = 1
-                criteria['EOFE_crit'] = 1
-                criteria['end_FET_crit'] = 0
-                criteria['end_EOTV_crit'] = 0
+                criteria.at[nTrial, 'end_dFVC_crit'] = 1
+                criteria.at[nTrial, 'EOFE_crit'] = 1
+                criteria.at[nTrial, 'end_FET_crit'] = 0
+                criteria.at[nTrial, 'end_EOTV_crit'] = 0
             else:
-                criteria['end_dFVC_crit'] = 0
-                criteria['end_FET_crit'] = 0
-                criteria['end_EOTV_crit'] = 0
-                criteria['EOFE_crit'] = 0
-                criteria['accept'] = 0
+                criteria.at[nTrial, 'end_dFVC_crit'] = 0
+                criteria.at[nTrial, 'end_FET_crit'] = 0
+                criteria.at[nTrial, 'end_EOTV_crit'] = 0
+                criteria.at[nTrial, 'EOFE_crit'] = 0
+                criteria.at[nTrial, 'accept'] = 0
 
-        if criteria['start_of_test_crit'] and criteria['max_insp_crit'] and criteria['EOFE_crit']:
-            criteria['accept'] = 1
+        if criteria.at[nTrial, 'start_of_test_crit'] and criteria.at[nTrial, 'max_insp_crit'] and criteria.at[nTrial, 'EOFE_crit']:
+            criteria.at[nTrial, 'accept'] = 1
         else:
-            criteria['accept'] = 0
+            criteria.at[nTrial, 'accept'] = 0
 
         # Repeatability
 
         if data['dFEV1_man'] <= 0.15:
-            criteria['repeat_dFEV1_crit'] = 1
+            criteria.at[nTrial, 'repeat_dFEV1_crit'] = 1
         else:
-            criteria['repeat_dFEV1_crit'] = 0
-            criteria['repeat_crit'] = 0
+            criteria.at[nTrial, 'repeat_dFEV1_crit'] = 0
+            criteria.at[nTrial, 'repeat_crit'] = 0
 
         if data['dFVC_man'] <= 0.15:
-            criteria['repeat_dFVC_crit'] = 1
+            criteria.at[nTrial, 'repeat_dFVC_crit'] = 1
             if 'repeat_crit' not in criteria:
-                criteria['repeat_crit'] = 1
+                criteria.at[nTrial, 'repeat_crit'] = 1
         else:
-            criteria['repeat_dFVC_crit'] = 0
-            criteria['repeat_crit'] = 0
+            criteria.at[nTrial, 'repeat_dFVC_crit'] = 0
+            criteria.at[nTrial, 'repeat_crit'] = 0
 
+    print(criteria)
 
-        print(nTrial, 'Accepted: ', criteria['accept'])
-        criterias[nTrial] = criteria
-        if nTrial == 1:
-            for key, value in criteria.items():
-                print(f'{key: <10}{value}')
-
-    return criterias
+    return criteria
 
 
 def compute_dFEV75man(data):
